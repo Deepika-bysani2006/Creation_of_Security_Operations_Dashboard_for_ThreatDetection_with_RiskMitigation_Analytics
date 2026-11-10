@@ -2,13 +2,11 @@ import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import {
   FiGitCommit,
-  FiShield,
   FiFilter,
   FiArrowRight,
   FiClock,
   FiServer,
   FiRefreshCw,
-  FiLayers,
 } from "react-icons/fi";
 
 import ErrorBanner from "../../components/ErrorBanner";
@@ -77,6 +75,19 @@ export default function AttackChains() {
             <span>Refresh</span>
           </button>
         </div>
+      </div>
+
+      {/* Executive Explainer Banner */}
+      <div className="bg-purple-500/10 border border-purple-500/25 rounded-xl px-4 py-3 text-xs flex items-center justify-between gap-3 text-purple-200">
+        <div className="flex items-center gap-2">
+          <FiGitCommit className="text-purple-400 shrink-0 text-sm" />
+          <span>
+            <strong>Executive Overview:</strong> This view correlates multiple security events into a chronological attack progression.
+          </span>
+        </div>
+        <span className="hidden md:inline-block text-[10px] font-mono text-purple-300 bg-purple-500/20 px-2 py-0.5 rounded border border-purple-500/30 shrink-0 font-bold">
+          CHRONOLOGICAL CORRELATION
+        </span>
       </div>
 
       {/* Filter Chips Bar */}
@@ -153,7 +164,7 @@ export default function AttackChains() {
 
                 <Link
                   to={`/dashboard/incidents/${chainDoc.incident_id}`}
-                  className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-[#1E293B] hover:bg-blue-600 text-slate-200 hover:text-white font-semibold transition-colors text-xs shrink-0 self-start sm:self-center"
+                  className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-md bg-blue-600 hover:bg-blue-700 text-white font-semibold shadow-xs transition-colors text-xs shrink-0 self-start sm:self-center"
                 >
                   <span>Investigate Incident</span>
                   <FiArrowRight />

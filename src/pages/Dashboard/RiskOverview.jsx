@@ -3,12 +3,9 @@ import { Link } from "react-router-dom";
 import {
   FiShield,
   FiAlertTriangle,
-  FiActivity,
   FiArrowRight,
   FiTrendingUp,
-  FiCheckCircle,
   FiLayers,
-  FiClock,
   FiSliders,
 } from "react-icons/fi";
 import { Doughnut, Line } from "react-chartjs-2";
@@ -218,7 +215,7 @@ export default function RiskOverview() {
       </div>
 
       {/* Mentor Required KPI Summary Cards */}
-      <section className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-3 md:gap-3.5">
+      <section className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 xl:grid-cols-8 gap-3 md:gap-3.5">
         <KpiCard
           title="Total Incidents"
           value={summary.total_incidents.toLocaleString()}
@@ -342,7 +339,7 @@ export default function RiskOverview() {
               <span>Top Critical & High Risk Incidents</span>
             </h3>
             <p className="text-xs text-slate-400 mt-0.5">
-              Prioritized by deterministic risk score (score ≥ 61)
+              Prioritized by Enterprise Risk Score (score ≥ 61)
             </p>
           </div>
 
@@ -396,7 +393,7 @@ export default function RiskOverview() {
                   <td className="py-2.5 px-3 text-right">
                     <Link
                       to={`/dashboard/incidents/${inc.incident_id}`}
-                      className="inline-flex items-center gap-1 px-2.5 py-1 rounded bg-[#1E293B] hover:bg-blue-600 text-slate-300 hover:text-white font-semibold transition-colors"
+                      className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-blue-600 hover:bg-blue-700 text-white font-semibold shadow-xs transition-colors text-xs"
                     >
                       <span>Investigate</span>
                       <FiArrowRight className="text-xs" />

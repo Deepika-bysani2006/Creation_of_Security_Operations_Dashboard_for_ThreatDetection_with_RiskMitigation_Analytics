@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
+import { Link } from "react-router-dom";
 import {
   FiGitCommit,
   FiClock,
@@ -9,6 +10,7 @@ import {
   FiEye,
   FiEyeOff,
   FiActivity,
+  FiArrowRight,
 } from "react-icons/fi";
 
 const STAGE_TACTIC_COLORS = {
@@ -223,8 +225,16 @@ export default function AttackChainTimeline({ attackChain }) {
 
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs pt-1 border-t border-[#1F2937]/80">
                   <div className="flex items-center gap-3">
-                    <span className="text-slate-400">
-                      Event ID: <span className="font-mono font-semibold text-slate-200">{stage.event_id}</span>
+                    <span className="text-slate-400 flex items-center gap-1">
+                      <span>Event:</span>
+                      <Link
+                        to={`/dashboard/events/${stage.event_id}`}
+                        title={`Inspect atomic security event ${stage.event_id}`}
+                        className="font-mono font-bold text-blue-400 hover:text-blue-300 hover:underline flex items-center gap-0.5"
+                      >
+                        <span>{stage.event_id}</span>
+                        <FiArrowRight className="text-[10px]" />
+                      </Link>
                     </span>
                     <span className="text-slate-400">
                       Type: <span className="font-semibold text-slate-200">{stage.event_type}</span>

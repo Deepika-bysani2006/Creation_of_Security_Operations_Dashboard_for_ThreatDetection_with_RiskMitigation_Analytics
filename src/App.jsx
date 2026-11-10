@@ -13,6 +13,8 @@ import RiskOverview from "./pages/Dashboard/RiskOverview";
 import PriorityIncidents from "./pages/Dashboard/PriorityIncidents";
 import IncidentDetails from "./pages/Dashboard/IncidentDetails";
 import AttackChains from "./pages/Dashboard/AttackChains";
+import Executive from "./pages/Dashboard/Executive";
+import Reports from "./pages/Dashboard/Reports";
 
 import { ThemeProvider } from "./context/ThemeContext";
 
@@ -34,6 +36,8 @@ function App() {
             <Route path="threat-intel" element={<ThreatIntel />} />
             <Route path="vulnerabilities" element={<Vulnerabilities />} />
             <Route path="analytics" element={<Analytics />} />
+            <Route path="executive" element={<Executive />} />
+            <Route path="reports" element={<Reports />} />
           </Route>
         </Routes>
       </BrowserRouter>

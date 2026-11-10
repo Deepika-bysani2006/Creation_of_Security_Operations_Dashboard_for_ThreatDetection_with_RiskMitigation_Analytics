@@ -180,10 +180,14 @@ export async function getIncidents(filters = {}) {
   const q = new URLSearchParams();
   if (filters.risk_level && filters.risk_level !== "All") q.set("risk_level", filters.risk_level);
   if (filters.priority && filters.priority !== "All") q.set("priority", filters.priority);
+  if (filters.severity && filters.severity !== "All") q.set("severity", filters.severity);
   if (filters.threat_type && filters.threat_type !== "All") q.set("threat_type", filters.threat_type);
   if (filters.asset_name && filters.asset_name !== "All") q.set("asset_name", filters.asset_name);
   if (filters.department && filters.department !== "All") q.set("department", filters.department);
   if (filters.mitre_technique && filters.mitre_technique !== "All") q.set("mitre_technique", filters.mitre_technique);
+  if (filters.cve && filters.cve !== "All") q.set("cve", filters.cve);
+  if (filters.ioc_status && filters.ioc_status !== "All") q.set("ioc_status", filters.ioc_status);
+  if (filters.time_range && filters.time_range !== "all") q.set("time_range", filters.time_range);
   if (filters.start_date) q.set("start_date", filters.start_date);
   if (filters.end_date) q.set("end_date", filters.end_date);
   if (filters.status && filters.status !== "All") q.set("status", filters.status);
@@ -314,4 +318,94 @@ export const MITRE_TECHNIQUE_OPTIONS = [
   { id: "T1083", name: "File and Directory Discovery" },
   { id: "T1200", name: "Hardware Additions" },
 ];
+
+// ---------------------------------------------------------------------------
+// Milestone 4 Backend Integration & Reporting API Functions
+// ---------------------------------------------------------------------------
+
+export async function getDashboardOverview(params = {}) {
+  const q = new URLSearchParams();
+  if (params.time_range && params.time_range !== "all") q.set("time_range", params.time_range);
+  if (params.start_date) q.set("start_date", params.start_date);
+  if (params.end_date) q.set("end_date", params.end_date);
+  const query = q.toString() ? `?${q.toString()}` : "";
+  return fetchJson(`/api/v1/dashboard/overview${query}`);
+}
+
+export async function getSecurityPosture() {
+  return fetchJson("/api/v1/dashboard/security-posture");
+}
+
+export async function getExecutiveSummary() {
+  return fetchJson("/api/v1/executive/summary");
+}
+
+export async function getSecurityReportJson() {
+  return fetchJson("/api/v1/reports/security");
+}
+
+export function getSecurityReportCsvUrl() {
+  return `${BASE_URL}/api/v1/reports/security.csv`;
+}
+
+export async function getThreatIntelIndicators(params = {}) {
+  const q = new URLSearchParams();
+  const indicatorType = params.indicator_type || params.ioc_type;
+  if (indicatorType && indicatorType !== "All") q.set("indicator_type", indicatorType);
+  if (params.severity && params.severity !== "All") q.set("severity", params.severity);
+  if (params.status && params.status !== "All") q.set("status", params.status);
+  if (params.search && params.search.trim()) q.set("search", params.search.trim());
+  if (params.limit) q.set("limit", params.limit);
+  if (params.skip !== undefined && params.skip !== null) q.set("skip", params.skip);
+  const query = q.toString() ? `?${q.toString()}` : "";
+  return fetchJson(`/api/v1/threat-intel/indicators${query}`);
+}
+
+export async function getThreatIntelSummary() {
+  return fetchJson("/api/v1/threat-intel/summary");
+}
+
+export async function getVulnerabilitiesSummary() {
+  return fetchJson("/api/v1/vulnerabilities/summary");
+}
+
+export async function getPaginatedVulnerabilities(params = {}) {
+  const q = new URLSearchParams();
+  if (params.severity && params.severity !== "All") q.set("severity", params.severity);
+  const patch = params.patch_available || params.patch_status;
+  if (patch && patch !== "All") q.set("patch_available", patch);
+  if (params.status && params.status !== "All") q.set("status", params.status);
+  if (params.affected_asset && params.affected_asset !== "All") q.set("affected_asset", params.affected_asset);
+  if (params.search && params.search.trim()) q.set("search", params.search.trim());
+  if (params.limit) q.set("limit", params.limit);
+  if (params.skip !== undefined && params.skip !== null) q.set("skip", params.skip);
+  const query = q.toString() ? `?${q.toString()}` : "";
+  return fetchJson(`/api/v1/vulnerabilities${query}`);
+}
+
+export async function getEventById(eventId) {
+  if (!eventId) throw new Error("eventId is required");
+  return fetchJson(`/events/${encodeURIComponent(eventId)}`);
+}
+
+export async function getAllAnalystFeedback(params = {}) {
+  const q = new URLSearchParams();
+  if (params.limit) q.set("limit", params.limit);
+  if (params.skip !== undefined && params.skip !== null) q.set("skip", params.skip);
+  const query = q.toString() ? `?${q.toString()}` : "";
+  return fetchJson(`/api/v1/feedback${query}`);
+}
+
+export const INCIDENT_IOC_STATUS_OPTIONS = ["All", "Malicious", "Clean"];
+export const THREAT_INTEL_STATUS_OPTIONS = ["All", "Malicious", "Suspicious", "Benign"];
+export const IOC_STATUS_OPTIONS = ["All", "Malicious", "Suspicious", "Benign"]; // backwards compatibility
+export const IOC_TYPE_OPTIONS = ["All", "IP Address", "Domain", "File Hash (SHA256)", "URL", "Email Address"];
+export const PATCH_OPTIONS = ["All", "Yes", "No"];
+export const TIME_RANGE_OPTIONS = [
+  { label: "All Time", value: "all" },
+  { label: "Last 24 Hours", value: "24h" },
+  { label: "Last 7 Days", value: "7d" },
+  { label: "Last 30 Days", value: "30d" },
+];
+
 

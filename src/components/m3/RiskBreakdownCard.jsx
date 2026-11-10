@@ -21,11 +21,13 @@ export default function RiskBreakdownCard({ riskScore, riskLevel, priority, brea
           <RiskScoreBadge score={riskScore} level={riskLevel} size="lg" />
           <div>
             <div className="flex items-center gap-2">
-              <h3 className="text-base md:text-lg font-bold text-slate-100">Deterministic Risk Score</h3>
+              <h3 className="text-base md:text-lg font-bold text-slate-100" title="Calculated from the project's configured security risk factors">
+                Enterprise Risk Score
+              </h3>
               <RiskLevelBadge level={riskLevel} size="sm" />
             </div>
             <p className="text-xs text-slate-400 mt-0.5">
-              5-factor deterministic formula computed by M3 Risk Prioritization Engine
+              5-factor deterministic formula computed by Risk Prioritization Engine
             </p>
           </div>
         </div>

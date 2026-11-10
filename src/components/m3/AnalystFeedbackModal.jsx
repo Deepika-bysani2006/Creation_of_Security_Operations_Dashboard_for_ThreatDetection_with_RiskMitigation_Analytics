@@ -94,7 +94,7 @@ export default function AnalystFeedbackModal({
             {/* Mandatory Reason */}
             <div className="space-y-1.5">
               <label className="text-xs font-bold text-slate-200 block">
-                Primary Reason <span className="text-red-400">*</span>
+                False Positive Reason <span className="text-red-400">*</span>
               </label>
               <select
                 value={reason}

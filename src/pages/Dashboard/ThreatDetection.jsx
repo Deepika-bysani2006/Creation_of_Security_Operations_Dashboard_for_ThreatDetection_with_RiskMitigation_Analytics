@@ -140,9 +140,6 @@ export default function ThreatDetection() {
             <h2 className="text-xl md:text-2xl font-black text-slate-100 tracking-tight">
               AI Threat Detection
             </h2>
-            <span className="text-xs font-mono font-bold bg-blue-500/15 text-blue-400 border border-blue-500/30 px-2 py-0.5 rounded">
-              Milestone 2
-            </span>
           </div>
           <p className="text-xs text-slate-400 mt-1">
             ML-powered anomaly detection, soft threat classification, and explainable hybrid scoring.
@@ -169,7 +166,7 @@ export default function ThreatDetection() {
       {error && <ErrorBanner message={error} />}
 
       {/* Required 5 Primary M2 KPI Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-4">
         <KpiCard
           title="Total Events"
           value={totalPreds.toLocaleString()}

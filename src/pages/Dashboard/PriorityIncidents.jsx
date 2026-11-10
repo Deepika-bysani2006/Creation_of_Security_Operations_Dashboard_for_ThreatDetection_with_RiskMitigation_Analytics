@@ -1,9 +1,8 @@
 import React, { useState, useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import {
   FiShield,
   FiSearch,
-  FiFilter,
   FiArrowRight,
   FiChevronLeft,
   FiChevronRight,
@@ -12,7 +11,6 @@ import {
   FiUser,
   FiServer,
   FiCalendar,
-  FiLayers,
 } from "react-icons/fi";
 
 import ErrorBanner from "../../components/ErrorBanner";
@@ -20,15 +18,17 @@ import { RiskLevelBadge, PriorityBadge, StatusBadge, RiskScoreBadge } from "../.
 import {
   getIncidents,
   RISK_LEVEL_OPTIONS,
-  PRIORITY_OPTIONS,
   EVENT_TYPE_OPTIONS,
   INCIDENT_STATUS_OPTIONS,
   DEPARTMENT_OPTIONS,
   MITRE_TECHNIQUE_OPTIONS,
+  SEVERITY_OPTIONS,
+  INCIDENT_IOC_STATUS_OPTIONS,
 } from "../../services/api";
 
 export default function PriorityIncidents() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
 
   // State
   const [incidents, setIncidents] = useState([]);
@@ -36,18 +36,21 @@ export default function PriorityIncidents() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Filters & Pagination State
+  // Filters & Pagination State (initialized from searchParams if navigated from charts/cards)
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(25);
-  const [riskLevel, setRiskLevel] = useState("All");
-  const [priority, setPriority] = useState("All");
-  const [threatType, setThreatType] = useState("All");
-  const [department, setDepartment] = useState("All");
-  const [mitreTechnique, setMitreTechnique] = useState("All");
-  const [startDate, setStartDate] = useState("");
-  const [endDate, setEndDate] = useState("");
-  const [status, setStatus] = useState("All");
-  const [assetName, setAssetName] = useState("");
+  const [riskLevel, setRiskLevel] = useState(searchParams.get("risk_level") || "All");
+  const [priority, setPriority] = useState(searchParams.get("priority") || "All");
+  const [severity, setSeverity] = useState(searchParams.get("severity") || "All");
+  const [threatType, setThreatType] = useState(searchParams.get("threat_type") || "All");
+  const [department, setDepartment] = useState(searchParams.get("department") || "All");
+  const [mitreTechnique, setMitreTechnique] = useState(searchParams.get("mitre_technique") || "All");
+  const [cve, setCve] = useState(searchParams.get("cve") || "");
+  const [iocStatus, setIocStatus] = useState(searchParams.get("ioc_status") || "All");
+  const [startDate, setStartDate] = useState(searchParams.get("start_date") || "");
+  const [endDate, setEndDate] = useState(searchParams.get("end_date") || "");
+  const [status, setStatus] = useState(searchParams.get("status") || "All");
+  const [assetName, setAssetName] = useState(searchParams.get("asset_name") || "");
   const [sortBy, setSortBy] = useState("risk_score");
   const [sortOrder, setSortOrder] = useState("desc");
 
@@ -57,15 +60,18 @@ export default function PriorityIncidents() {
     try {
       const skip = (page - 1) * pageSize;
       const res = await getIncidents({
-        risk_level: riskLevel,
-        priority,
-        threat_type: threatType,
+        risk_level: riskLevel !== "All" ? riskLevel : undefined,
+        priority: priority !== "All" ? priority : undefined,
+        severity: severity !== "All" ? severity : undefined,
+        threat_type: threatType !== "All" ? threatType : undefined,
         department: department !== "All" ? department : undefined,
         mitre_technique: mitreTechnique !== "All" ? mitreTechnique : undefined,
+        cve: cve.trim() || undefined,
+        ioc_status: iocStatus !== "All" ? iocStatus : undefined,
         start_date: startDate || undefined,
         end_date: endDate || undefined,
         asset_name: assetName.trim() || undefined,
-        status,
+        status: status !== "All" ? status : undefined,
         sort_by: sortBy,
         sort_order: sortOrder,
         limit: pageSize,
@@ -82,7 +88,23 @@ export default function PriorityIncidents() {
 
   useEffect(() => {
     loadIncidents();
-  }, [page, pageSize, riskLevel, priority, threatType, department, mitreTechnique, startDate, endDate, status, sortBy, sortOrder]);
+  }, [
+    page,
+    pageSize,
+    riskLevel,
+    priority,
+    severity,
+    threatType,
+    department,
+    mitreTechnique,
+    cve,
+    iocStatus,
+    startDate,
+    endDate,
+    status,
+    sortBy,
+    sortOrder,
+  ]);
 
   const totalPages = Math.ceil(total / pageSize) || 1;
 
@@ -95,9 +117,12 @@ export default function PriorityIncidents() {
   function handleResetFilters() {
     setRiskLevel("All");
     setPriority("All");
+    setSeverity("All");
     setThreatType("All");
     setDepartment("All");
     setMitreTechnique("All");
+    setCve("");
+    setIocStatus("All");
     setStartDate("");
     setEndDate("");
     setStatus("All");
@@ -135,9 +160,9 @@ export default function PriorityIncidents() {
 
       {/* Complete Mentor-Required Filter Controls Bar */}
       <div className="bg-[#111827] border border-[#1F2937] rounded-xl p-4 space-y-3.5">
-        <form onSubmit={handleSearchSubmit} className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-3">
+        <form onSubmit={handleSearchSubmit} className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-8 gap-3">
           {/* 1. Search Asset / Name */}
-          <div className="relative lg:col-span-2">
+          <div className="relative sm:col-span-2 lg:col-span-2">
             <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1 block">
               Asset Search
             </label>
@@ -266,15 +291,71 @@ export default function PriorityIncidents() {
               }}
               className="w-full rounded-lg border border-[#1F2937] bg-[#1E293B] px-2.5 py-1.5 text-xs text-slate-200 focus:outline-none focus:border-blue-500"
             >
-              <option value="risk_score">Risk Score (Desc)</option>
+              <option value="risk_score">Enterprise Risk Score (Desc)</option>
               <option value="created_at">Timestamp</option>
-              <option value="ml_confidence">ML Confidence</option>
+              <option value="ml_confidence">AI Detection Confidence</option>
             </select>
           </div>
         </form>
 
         {/* Date Range & Secondary Filters Row */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 pt-2 border-t border-[#1F2937]/70">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-6 gap-3 pt-2 border-t border-[#1F2937]/70">
+          {/* Severity */}
+          <div>
+            <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1 block">
+              Severity
+            </label>
+            <select
+              value={severity}
+              onChange={(e) => {
+                setSeverity(e.target.value);
+                setPage(1);
+              }}
+              className="w-full rounded-lg border border-[#1F2937] bg-[#1E293B] px-2.5 py-1.5 text-xs text-slate-200 focus:outline-none focus:border-blue-500"
+            >
+              <option value="All">All Severities</option>
+              {SEVERITY_OPTIONS.map((s) => (
+                <option key={s} value={s}>{s}</option>
+              ))}
+            </select>
+          </div>
+
+          {/* Threat Intelligence Match */}
+          <div>
+            <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1 block" title="Correlated Indicators of Compromise from Threat Intelligence">
+              Threat Intel Match
+            </label>
+            <select
+              value={iocStatus}
+              onChange={(e) => {
+                setIocStatus(e.target.value);
+                setPage(1);
+              }}
+              className="w-full rounded-lg border border-[#1F2937] bg-[#1E293B] px-2.5 py-1.5 text-xs text-slate-200 focus:outline-none focus:border-blue-500"
+            >
+              {INCIDENT_IOC_STATUS_OPTIONS.map((st) => (
+                <option key={st} value={st}>{st === "All" ? "All IOC Statuses" : st}</option>
+              ))}
+            </select>
+          </div>
+
+          {/* CVE Identifier */}
+          <div>
+            <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1 block">
+              CVE ID
+            </label>
+            <input
+              type="text"
+              value={cve}
+              onChange={(e) => {
+                setCve(e.target.value);
+                setPage(1);
+              }}
+              placeholder="Search CVE... e.g. CVE-2024-1045"
+              className="w-full rounded-lg border border-[#1F2937] bg-[#1E293B] px-2.5 py-1.5 text-xs text-slate-200 focus:outline-none focus:border-blue-500"
+            />
+          </div>
+
           {/* Start Date */}
           <div>
             <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1 block flex items-center gap-1">
@@ -309,37 +390,17 @@ export default function PriorityIncidents() {
             />
           </div>
 
-          {/* Priority Rating */}
-          <div>
-            <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1 block">
-              Priority
-            </label>
-            <select
-              value={priority}
-              onChange={(e) => {
-                setPriority(e.target.value);
-                setPage(1);
-              }}
-              className="w-full rounded-lg border border-[#1F2937] bg-[#1E293B] px-2.5 py-1.5 text-xs text-slate-200 focus:outline-none focus:border-blue-500"
-            >
-              <option value="All">All Priorities</option>
-              {PRIORITY_OPTIONS.map((pri) => (
-                <option key={pri} value={pri}>{pri.replace("_", " ")}</option>
-              ))}
-            </select>
-          </div>
-
           {/* Active Filter Counter & Reset */}
-          <div className="flex items-end justify-between sm:justify-end gap-3 pb-0.5">
-            <span className="text-xs text-slate-400">
-              Found <strong className="text-slate-100">{total}</strong> incidents
+          <div className="flex flex-col justify-end">
+            <span className="text-[10px] text-slate-400 mb-1">
+              Found <strong className="text-slate-100">{total.toLocaleString()}</strong> incidents
             </span>
             <button
               type="button"
               onClick={handleResetFilters}
               className="px-3 py-1.5 rounded-lg border border-[#1F2937] bg-[#1E293B] hover:bg-slate-700 text-blue-400 hover:text-blue-300 text-xs font-semibold transition-colors cursor-pointer"
             >
-              Reset Filters
+              Clear Filters
             </button>
           </div>
         </div>
@@ -441,7 +502,7 @@ export default function PriorityIncidents() {
                       <Link
                         to={`/dashboard/incidents/${inc.incident_id}`}
                         onClick={(e) => e.stopPropagation()}
-                        className="inline-flex items-center gap-1 px-2.5 py-1 rounded bg-[#1E293B] group-hover:bg-blue-600 text-slate-300 group-hover:text-white font-semibold transition-colors text-[11px]"
+                        className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-blue-600 hover:bg-blue-700 text-white font-semibold text-[11px] shadow-xs transition-colors"
                       >
                         <span>Investigate</span>
                         <FiArrowRight className="text-xs" />

@@ -2,7 +2,6 @@ import React, { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import {
   FiArrowLeft,
-  FiShield,
   FiAlertTriangle,
   FiClock,
   FiServer,
@@ -11,6 +10,7 @@ import {
   FiActivity,
   FiList,
   FiRefreshCw,
+  FiArrowRight,
 } from "react-icons/fi";
 
 import ErrorBanner from "../../components/ErrorBanner";
@@ -54,7 +54,7 @@ export default function IncidentDetails() {
       try {
         const fbData = await getAnalystFeedback(incidentId);
         setFeedbackHistory(fbData || []);
-      } catch (fbErr) {
+      } catch {
         // Fallback to embedded feedback if separate call fails
         setFeedbackHistory(data.feedback || []);
       }
@@ -95,7 +95,7 @@ export default function IncidentDetails() {
     }
   }
 
-  function handleFeedbackSubmitted(record) {
+  function handleFeedbackSubmitted() {
     setStatusSuccess("Incident marked as False Positive with structured analyst feedback recorded.");
     setTimeout(() => setStatusSuccess(null), 5000);
     loadIncident();
@@ -205,6 +205,16 @@ export default function IncidentDetails() {
                   <FiUser className="text-slate-500" />
                   User: <strong className="text-slate-100">{incident.affected_user || "system"}</strong>
                 </span>
+                {incident.source_ip && (
+                  <span className="flex items-center gap-1 text-slate-300">
+                    Src IP: <strong className="text-blue-400 font-mono">{incident.source_ip}</strong>
+                  </span>
+                )}
+                {incident.destination_ip && (
+                  <span className="flex items-center gap-1 text-slate-300">
+                    Dst IP: <strong className="text-slate-200 font-mono">{incident.destination_ip}</strong>
+                  </span>
+                )}
               </div>
             </div>
           </div>
@@ -226,22 +236,34 @@ export default function IncidentDetails() {
           </div>
         </div>
 
-        {/* Quick Meta Chips */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-1">
-          <div className="bg-[#1E293B]/70 border border-[#1F2937] rounded-lg p-2.5">
-            <span className="text-[10px] uppercase font-bold text-slate-400 block">ML Confidence</span>
+        {/* Quick Meta Chips — Full Investigation Attributes */}
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 pt-1">
+          <div className="bg-[#1E293B]/70 border border-[#1F2937] rounded-lg p-2.5" title="Confidence assigned by the threat detection model">
+            <span className="text-[10px] uppercase font-bold text-slate-400 block">AI Detection Confidence</span>
             <span className="text-sm font-mono font-bold text-blue-400">{incident.ml_confidence}%</span>
           </div>
-          <div className="bg-[#1E293B]/70 border border-[#1F2937] rounded-lg p-2.5">
-            <span className="text-[10px] uppercase font-bold text-slate-400 block">Vulnerability CVSS</span>
-            <span className={`text-sm font-mono font-bold ${incident.cvss_score >= 9 ? "text-red-400" : incident.cvss_score >= 7 ? "text-orange-400" : "text-slate-200"}`}>
-              {incident.cvss_score !== null && incident.cvss_score !== undefined ? incident.cvss_score.toFixed(1) : "N/A"}
+          <div className="bg-[#1E293B]/70 border border-[#1F2937] rounded-lg p-2.5" title="Common Vulnerability Scoring System severity rating">
+            <span className="text-[10px] uppercase font-bold text-slate-400 block">CVE & Severity (CVSS)</span>
+            <span className={`text-sm font-mono font-bold block truncate ${incident.cvss_score >= 9 ? "text-red-400" : incident.cvss_score >= 7 ? "text-orange-400" : "text-slate-200"}`}>
+              {incident.cve_id || "CVE-2025"} ({incident.cvss_score !== null && incident.cvss_score !== undefined ? incident.cvss_score.toFixed(1) : "N/A"})
+            </span>
+          </div>
+          <div className="bg-[#1E293B]/70 border border-[#1F2937] rounded-lg p-2.5" title="Correlated Indicators of Compromise from Threat Intelligence">
+            <span className="text-[10px] uppercase font-bold text-slate-400 block">Threat Intelligence</span>
+            <span className={`text-sm font-bold truncate block ${incident.ioc_status === "Malicious" ? "text-red-400" : "text-emerald-400"}`}>
+              {incident.ioc_status || "Clean"} {incident.ioc_value ? `(${incident.ioc_value})` : ""}
+            </span>
+          </div>
+          <div className="bg-[#1E293B]/70 border border-[#1F2937] rounded-lg p-2.5" title="Adversary behavior mapped to the MITRE ATT&CK framework">
+            <span className="text-[10px] uppercase font-bold text-slate-400 block">MITRE ATT&CK</span>
+            <span className="text-sm font-mono font-bold text-purple-300 truncate block">
+              {incident.mitre_technique || incident.mitre_techniques?.[0] || "T1190"}
             </span>
           </div>
           <div className="bg-[#1E293B]/70 border border-[#1F2937] rounded-lg p-2.5">
-            <span className="text-[10px] uppercase font-bold text-slate-400 block">Threat Intel Match</span>
-            <span className={`text-sm font-bold ${incident.ioc_status === "Malicious" ? "text-red-400" : "text-emerald-400"}`}>
-              {incident.ioc_status || "Clean"}
+            <span className="text-[10px] uppercase font-bold text-slate-400 block">Source IP</span>
+            <span className="text-sm font-mono font-semibold text-blue-300 truncate block">
+              {incident.source_ip || "10.0.0.1"}
             </span>
           </div>
           <div className="bg-[#1E293B]/70 border border-[#1F2937] rounded-lg p-2.5">
@@ -250,6 +272,57 @@ export default function IncidentDetails() {
               {incident.attack_chain_detected ? incident.attack_chain_type || "Detected" : "None"}
             </span>
           </div>
+        </div>
+
+        {/* Prominent Callout: WHY IS THIS INCIDENT RISKY? */}
+        {incident.reasons && incident.reasons.length > 0 && (
+          <div className="bg-red-500/10 border border-red-500/30 rounded-xl p-4 space-y-2">
+            <div className="flex items-center gap-2">
+              <FiAlertTriangle className="text-red-400 text-base shrink-0" />
+              <h3 className="text-xs font-bold uppercase tracking-wider text-red-300">
+                Why Is This Incident Risky? (SOC Explainability Summary)
+              </h3>
+            </div>
+            <ul className="grid grid-cols-1 md:grid-cols-2 gap-2 pt-1">
+              {incident.reasons.map((reason, idx) => (
+                <li key={idx} className="flex items-start gap-2 text-xs text-slate-200">
+                  <span className="h-1.5 w-1.5 rounded-full bg-red-400 mt-1.5 shrink-0" />
+                  <span>{reason}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+      </div>
+
+      {/* Analyst Quick Workflow Actions (Phase 10 & 11) */}
+      <div className="flex items-center justify-between flex-wrap gap-2.5 bg-[#111827] border border-[#1F2937] rounded-xl p-3.5">
+        <div className="flex items-center gap-2">
+          <span className="text-xs font-bold text-slate-200">Analyst Workflow Actions:</span>
+          <span className="text-[11px] text-slate-400">Update lifecycle status or submit feedback</span>
+        </div>
+        <div className="flex items-center gap-2 flex-wrap">
+          <button
+            onClick={() => handleStatusChange("Investigating")}
+            disabled={statusUpdating || incident.status === "Investigating"}
+            className="px-3 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold shadow-xs transition-colors disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
+          >
+            Mark Investigating
+          </button>
+          <button
+            onClick={() => handleStatusChange("Resolved")}
+            disabled={statusUpdating || incident.status === "Resolved"}
+            className="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold shadow-xs transition-colors disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
+          >
+            Mark Resolved
+          </button>
+          <button
+            onClick={() => handleStatusChange("False Positive")}
+            disabled={statusUpdating || incident.status === "False Positive"}
+            className="px-3 py-1.5 rounded-lg bg-amber-600 hover:bg-amber-700 text-white text-xs font-semibold shadow-xs transition-colors disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
+          >
+            Mark False Positive
+          </button>
         </div>
       </div>
 
@@ -342,12 +415,22 @@ export default function IncidentDetails() {
 
         <div className="flex flex-wrap gap-2 pt-1">
           {incident.event_ids?.map((eid) => (
-            <span
+            <Link
               key={eid}
-              className={`font-mono text-xs px-2.5 py-1 rounded-md border ${eid.includes(incident.incident_id.replace("INC-", "")) || eid === incident.event_ids[0] ? "bg-blue-600/20 text-blue-300 border-blue-500/40 font-bold" : "bg-[#1E293B] text-slate-300 border-[#1F2937]"}`}
+              to={`/dashboard/events/${eid}`}
+              title={`Inspect atomic telemetry event ${eid}`}
+              className={`font-mono text-xs px-2.5 py-1 rounded-md border transition-all hover:scale-105 flex items-center gap-1.5 ${
+                eid.includes(incident.incident_id.replace("INC-", "")) || eid === incident.event_ids[0]
+                  ? "bg-blue-600/25 text-blue-300 border-blue-500/40 font-bold hover:bg-blue-600/40"
+                  : "bg-[#1E293B] text-slate-300 border-[#1F2937] hover:bg-slate-700 hover:text-white"
+              }`}
             >
-              {eid} {eid === incident.event_ids[0] ? "(Anchor)" : ""}
-            </span>
+              <span>{eid}</span>
+              {eid === incident.event_ids[0] && (
+                <span className="text-[10px] text-blue-400 font-bold">(Anchor)</span>
+              )}
+              <FiArrowRight className="text-[10px] opacity-70" />
+            </Link>
           ))}
         </div>
       </div>

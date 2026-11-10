@@ -111,7 +111,9 @@ export default function SecurityIntelligenceCard({ incident }) {
           {isMalicious ? (
             <div className="space-y-1.5 text-xs">
               <div className="flex justify-between items-center">
-                <span className="text-slate-400">IOC Status:</span>
+                <span className="text-slate-400" title="Correlated Indicators of Compromise from Threat Intelligence">
+                  Threat Intelligence Match:
+                </span>
                 <span className="font-semibold px-1.5 py-0.5 rounded text-[10px] bg-red-500/20 text-red-300 border border-red-500/30">
                   Malicious
                 </span>
@@ -182,15 +184,15 @@ export default function SecurityIntelligenceCard({ incident }) {
           )}
         </div>
 
-        {/* 4. MITRE & ML Context */}
+        {/* 4. MITRE & AI Detection Context */}
         <div className="bg-[#1E293B] border border-[#1F2937] rounded-lg p-4 space-y-2.5">
           <div className="flex items-center gap-2 text-xs font-bold text-slate-200">
             <FiCpu className="text-purple-400" />
-            <span>MITRE & ML Context</span>
+            <span title="Adversary behavior mapped to the MITRE ATT&CK framework and ML anomaly scoring">MITRE & AI Context</span>
           </div>
           <div className="space-y-1.5 text-xs">
             <div className="flex justify-between">
-              <span className="text-slate-400">ML Confidence:</span>
+              <span className="text-slate-400" title="Confidence assigned by the threat detection model">AI Detection Confidence:</span>
               <span className="font-mono font-bold text-blue-400">{ml_confidence ? `${ml_confidence}%` : "--"}</span>
             </div>
             <div className="flex justify-between">

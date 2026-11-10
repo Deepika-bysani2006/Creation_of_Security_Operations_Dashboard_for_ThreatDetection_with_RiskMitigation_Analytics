@@ -10,13 +10,13 @@ SentinelAI is a modern AI-assisted cybersecurity operations platform built with 
 ## Screenshots
 
 ### SOC Operations Dashboard Overview
-![Dashboard Overview](public/screenshots/SOC Operations Overview.png)
+![Dashboard Overview](<public/screenshots/SOC Operations Overview.png>)
 
 ### AI Threat Detection (Milestone 2)
-![AI Threat Detection](public/screenshots/AI Threat Detection.png)
+![AI Threat Detection](<public/screenshots/AI Threat Detection.png>)
 
 ### Priority Incidents Queue
-![Priority Incidents Queue](public/screenshots/Priority Incidents Queue.png)
+![Priority Incidents Queue](<public/screenshots/Priority Incidents Queue.png>)
 
 ---
 

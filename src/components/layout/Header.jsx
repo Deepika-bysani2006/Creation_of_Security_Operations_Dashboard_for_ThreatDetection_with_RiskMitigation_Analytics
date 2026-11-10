@@ -15,14 +15,20 @@ import {
   FiShield,
   FiLock,
   FiBarChart2,
+  FiTrendingUp,
+  FiGitCommit,
+  FiLayers,
 } from "react-icons/fi";
 import { useTheme } from "../../context/ThemeContext";
 
 const menuItems = [
+  { icon: FiTrendingUp, label: "Risk Overview", to: "/dashboard/risk-overview" },
+  { icon: FiAlertTriangle, label: "Priority Incidents", to: "/dashboard/incidents" },
+  { icon: FiGitCommit, label: "Attack Chains", to: "/dashboard/attack-chains" },
   { icon: FiGrid, label: "Overview", to: "/dashboard" },
-  { icon: FiAlertTriangle, label: "AI Threat Detection", to: "/dashboard/detection" },
+  { icon: FiShield, label: "AI Threat Detection", to: "/dashboard/detection" },
   { icon: FiActivity, label: "Security Events", to: "/dashboard/events" },
-  { icon: FiShield, label: "Threat Intelligence", to: "/dashboard/threat-intel" },
+  { icon: FiLayers, label: "Threat Intelligence", to: "/dashboard/threat-intel" },
   { icon: FiLock, label: "Vulnerabilities", to: "/dashboard/vulnerabilities" },
   { icon: FiBarChart2, label: "Analytics", to: "/dashboard/analytics" },
 ];

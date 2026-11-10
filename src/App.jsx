@@ -9,6 +9,10 @@ import SecurityEvents from "./pages/Dashboard/SecurityEvents";
 import ThreatIntel from "./pages/Dashboard/ThreatIntel";
 import Vulnerabilities from "./pages/Dashboard/Vulnerabilities";
 import Analytics from "./pages/Dashboard/Analytics";
+import RiskOverview from "./pages/Dashboard/RiskOverview";
+import PriorityIncidents from "./pages/Dashboard/PriorityIncidents";
+import IncidentDetails from "./pages/Dashboard/IncidentDetails";
+import AttackChains from "./pages/Dashboard/AttackChains";
 
 import { ThemeProvider } from "./context/ThemeContext";
 
@@ -20,6 +24,10 @@ function App() {
           <Route path="/" element={<Login />} />
           <Route path="/dashboard" element={<DashboardLayout />}>
             <Route index element={<Overview />} />
+            <Route path="risk-overview" element={<RiskOverview />} />
+            <Route path="incidents" element={<PriorityIncidents />} />
+            <Route path="incidents/:id" element={<IncidentDetails />} />
+            <Route path="attack-chains" element={<AttackChains />} />
             <Route path="detection" element={<ThreatDetection />} />
             <Route path="events/:id" element={<EventDetails />} />
             <Route path="events" element={<SecurityEvents />} />

@@ -1,11 +1,13 @@
 import { Pie } from "react-chartjs-2";
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from "chart.js";
+import { useTheme } from "../context/ThemeContext";
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
 const COLORS = { Critical: "#EF4444", High: "#F97316", Medium: "#FBBF24", Low: "#10B981" };
 
 export default function ThreatDistributionChart({ events }) {
+  const { isDark } = useTheme();
   const counts = { Critical: 0, High: 0, Medium: 0, Low: 0 };
   events.forEach((e) => { counts[e.severity] = (counts[e.severity] || 0) + 1; });
 
@@ -22,13 +24,13 @@ export default function ThreatDistributionChart({ events }) {
     plugins: {
       legend: {
         position: "bottom",
-        labels: { boxWidth: 12, color: "#94A3B8", font: { size: 11, weight: 600 } },
+        labels: { boxWidth: 12, color: isDark ? "#94A3B8" : "#475569", font: { size: 11, weight: 600 } },
       },
       tooltip: {
-        backgroundColor: "#0B1329",
-        titleColor: "#F8FAFC",
-        bodyColor: "#CBD5E1",
-        borderColor: "#1F2937",
+        backgroundColor: isDark ? "#0B1329" : "#FFFFFF",
+        titleColor: isDark ? "#F8FAFC" : "#0F172A",
+        bodyColor: isDark ? "#CBD5E1" : "#334155",
+        borderColor: isDark ? "#1F2937" : "#CBD5E1",
         borderWidth: 1,
       },
     },

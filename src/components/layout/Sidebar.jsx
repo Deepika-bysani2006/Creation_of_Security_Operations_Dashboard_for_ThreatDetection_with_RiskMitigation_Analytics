@@ -5,10 +5,12 @@ import {
   FiShield,
   FiLock,
   FiBarChart2,
+  FiAlertTriangle,
 } from "react-icons/fi";
 
 const menuItems = [
   { icon: FiGrid, label: "Overview", to: "/dashboard" },
+  { icon: FiAlertTriangle, label: "AI Threat Detection", to: "/dashboard/detection" },
   { icon: FiActivity, label: "Security Events", to: "/dashboard/events" },
   { icon: FiShield, label: "Threat Intelligence", to: "/dashboard/threat-intel" },
   { icon: FiLock, label: "Vulnerabilities", to: "/dashboard/vulnerabilities" },
@@ -26,7 +28,7 @@ const Sidebar = () => {
           </div>
           <div className="min-w-0">
             <h1 className="text-base font-bold tracking-tight text-slate-100 truncate">SentinelAI</h1>
-            <p className="text-[11px] text-slate-400 font-medium truncate">SOC Platform</p>
+            <p className="text-[11px] text-slate-400 font-medium truncate">SOC Platform M2</p>
           </div>
         </div>
       </div>
@@ -63,10 +65,10 @@ const Sidebar = () => {
         <div className="rounded-lg bg-[#111827] border border-[#1F2937] p-3">
           <div className="flex items-center gap-2">
             <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse"></span>
-            <span className="text-xs font-semibold text-slate-200">Services Active</span>
+            <span className="text-xs font-semibold text-slate-200">M2 AI Engine Active</span>
           </div>
           <div className="mt-2 text-[11px] text-slate-400 flex justify-between items-center">
-            <span>SOC Engine</span>
+            <span>Hybrid Scorer</span>
             <span className="text-emerald-400 font-mono text-[10px] font-bold">ONLINE</span>
           </div>
         </div>

@@ -2,10 +2,12 @@ import { Bar } from "react-chartjs-2";
 import {
   Chart as ChartJS, CategoryScale, LinearScale, BarElement, Tooltip, Legend,
 } from "chart.js";
+import { useTheme } from "../context/ThemeContext";
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Tooltip, Legend);
 
 export default function TopAttackTypesChart({ threats }) {
+  const { isDark } = useTheme();
   const top = threats.slice(0, 6);
 
   const data = {
@@ -24,21 +26,21 @@ export default function TopAttackTypesChart({ threats }) {
     plugins: {
       legend: { display: false },
       tooltip: {
-        backgroundColor: "#0B1329",
-        titleColor: "#F8FAFC",
-        bodyColor: "#CBD5E1",
-        borderColor: "#1F2937",
+        backgroundColor: isDark ? "#0B1329" : "#FFFFFF",
+        titleColor: isDark ? "#F8FAFC" : "#0F172A",
+        bodyColor: isDark ? "#CBD5E1" : "#334155",
+        borderColor: isDark ? "#1F2937" : "#CBD5E1",
         borderWidth: 1,
       },
     },
     scales: {
       x: {
         beginAtZero: true,
-        ticks: { font: { size: 10 }, color: "#94A3B8" },
-        grid: { color: "#1E293B" },
+        ticks: { font: { size: 10 }, color: isDark ? "#94A3B8" : "#475569" },
+        grid: { color: isDark ? "#1E293B" : "#E2E8F0" },
       },
       y: {
-        ticks: { font: { size: 11, weight: 500 }, color: "#CBD5E1" },
+        ticks: { font: { size: 11, weight: 500 }, color: isDark ? "#CBD5E1" : "#1E293B" },
         grid: { display: false },
       },
     },

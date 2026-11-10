@@ -6,7 +6,15 @@ import AiInsightPanel from "../../components/AiInsightPanel";
 import ThreatDistributionChart from "../../charts/ThreatDistributionChart";
 import TopAttackTypesChart from "../../charts/TopAttackTypesChart";
 import EventTrendChart from "../../charts/EventTrendChart";
-import { getEvents, getStats, getThreats, computeAiInsights } from "../../services/api";
+import {
+  getEvents,
+  getStats,
+  getThreats,
+  computeAiInsights,
+  getThreatSummary,
+  getModelPerformance,
+  getTopPredictions,
+} from "../../services/api";
 import { useAsyncData } from "../../hooks/useAsyncData";
 import ErrorBanner from "../../components/ErrorBanner";
 
@@ -14,12 +22,22 @@ export default function Overview() {
   const [filters, setFilters] = useState({ severity: "All", eventType: "All", date: "", ip: "" });
 
   const { data, loading, error } = useAsyncData(async () => {
-    const [eventsData, statsData, threatsData] = await Promise.all([
+    const [eventsData, statsData, threatsData, summaryData, perfData, topPreds] = await Promise.all([
       getEvents(),
       getStats(),
       getThreats(),
+      getThreatSummary().catch(() => []),
+      getModelPerformance().catch(() => null),
+      getTopPredictions(3).catch(() => []),
     ]);
-    return { events: eventsData, stats: statsData, threats: threatsData };
+    return {
+      events: eventsData,
+      stats: statsData,
+      threats: threatsData,
+      m2Summary: summaryData,
+      m2Perf: perfData,
+      topPredictions: topPreds,
+    };
   }, []);
 
   if (loading) {
@@ -37,30 +55,36 @@ export default function Overview() {
     return <ErrorBanner message={error} />;
   }
 
-  const { events, stats, threats } = data;
+  const { events, stats, threats, m2Summary, m2Perf, topPredictions } = data;
   const insights = computeAiInsights(events);
 
   return (
     <div className="grid gap-5 md:gap-6">
       {/* 5 KPI Summary Cards */}
       <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 md:gap-4">
-        <KpiCard title="Total Events" value={stats.total_events.toLocaleString()} statusText="Normal" statusType="normal" iconType="activity" />
-        <KpiCard title="Critical Threats" value={stats.critical_events} statusText="Elevated" statusType="critical" iconType="critical" />
-        <KpiCard title="High Severity Alerts" value={stats.high_events} statusText="Moderate" statusType="moderate" iconType="lightning" />
-        <KpiCard title="Vulnerabilities" value={stats.vulnerabilities} statusText="Moderate" statusType="moderate" iconType="lock" />
-        <KpiCard title="Active Incidents" value={stats.active_incidents} statusText="Critical" statusType="critical" iconType="alert" />
+        <KpiCard title="Total Events" value={stats.total_events.toLocaleString()} statusText="M1 Telemetry" statusType="normal" iconType="activity" />
+        <KpiCard title="Critical Events (Raw)" value={stats.critical_events.toLocaleString()} statusText="M1 Severity 4" statusType="critical" iconType="critical" />
+        <KpiCard title="High Severity Alerts" value={stats.high_events.toLocaleString()} statusText="M1 Telemetry" statusType="moderate" iconType="lightning" />
+        <KpiCard title="Vulnerabilities" value={stats.vulnerabilities.toLocaleString()} statusText="CVE Records" statusType="normal" iconType="lock" />
+        <KpiCard title="Active Incidents" value={stats.active_incidents.toLocaleString()} statusText="Operational" statusType="critical" iconType="alert" />
       </section>
 
       {/* AI Threat Insight Panel */}
-      <AiInsightPanel insights={insights} avgRiskScore={stats.avg_risk_score} />
+      <AiInsightPanel
+        insights={insights}
+        avgRiskScore={stats.avg_risk_score}
+        m2Summary={m2Summary}
+        m2Perf={m2Perf}
+        topPredictions={topPredictions}
+      />
 
-      {/* Distribution + Top Attack Types Charts (Increased Focus) */}
+      {/* Distribution + Top Attack Types Charts */}
       <div className="grid gap-5 lg:grid-cols-2">
         <ThreatDistributionChart events={events} />
         <TopAttackTypesChart threats={threats} />
       </div>
 
-      {/* Threat Trend (Last 24 Hours) Chart */}
+      {/* Threat Trend Chart */}
       <EventTrendChart events={events} />
 
       {/* Search & Filters + Security Events Table */}

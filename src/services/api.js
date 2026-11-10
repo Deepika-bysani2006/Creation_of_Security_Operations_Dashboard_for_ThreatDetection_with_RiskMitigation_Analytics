@@ -16,6 +16,10 @@ async function fetchJson(path) {
   return res.json();
 }
 
+// ---------------------------------------------------------------------------
+// Milestone 1 API Functions
+// ---------------------------------------------------------------------------
+
 export async function getEvents(filters = {}) {
   const params = new URLSearchParams();
   if (filters.severity && filters.severity !== "All") params.set("severity", filters.severity);
@@ -59,15 +63,76 @@ export async function createEvent(eventData) {
   return res.json();
 }
 
+// ---------------------------------------------------------------------------
+// Milestone 2 AI Threat Detection API Functions
+// ---------------------------------------------------------------------------
+
+export async function getPredictions(filters = {}) {
+  const params = new URLSearchParams();
+  if (filters.verdict && filters.verdict !== "All") params.set("verdict", filters.verdict);
+  if (filters.threat_type && filters.threat_type !== "All") params.set("threat_type", filters.threat_type);
+  if (filters.severity && filters.severity !== "All") params.set("severity", filters.severity);
+  if (filters.event_id) params.set("event_id", filters.event_id);
+  else if (filters.search) params.set("event_id", filters.search);
+  if (filters.limit) params.set("limit", filters.limit);
+  if (filters.skip !== undefined && filters.skip !== null) params.set("skip", filters.skip);
+  const query = params.toString() ? `?${params.toString()}` : "";
+  return fetchJson(`/predictions${query}`);
+}
+
+export async function getPredictionById(predictionId) {
+  if (!predictionId) throw new Error("predictionId is required");
+  return fetchJson(`/predictions/${encodeURIComponent(predictionId)}`);
+}
+
+export async function getAnomalies(filters = {}) {
+  const params = new URLSearchParams();
+  if (filters.limit) params.set("limit", filters.limit);
+  if (filters.skip !== undefined && filters.skip !== null) params.set("skip", filters.skip);
+  const query = params.toString() ? `?${params.toString()}` : "";
+  return fetchJson(`/anomalies${query}`);
+}
+
+export async function getThreatSummary() {
+  return fetchJson("/threat-summary");
+}
+
+export async function getModelPerformance() {
+  return fetchJson("/model-performance");
+}
+
+export async function getPredictionTrend() {
+  return fetchJson("/prediction-trend");
+}
+
+export async function getTopPredictions(limit = 3) {
+  const params = new URLSearchParams();
+  if (limit) params.set("limit", limit);
+  const query = params.toString() ? `?${params.toString()}` : "";
+  return fetchJson(`/top-predictions${query}`);
+}
+
+export async function predictEvent(eventData) {
+  const res = await fetch(`${BASE_URL}/predict`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(eventData),
+  });
+  if (!res.ok) {
+    const body = await res.text().catch(() => "");
+    throw new Error(`API error ${res.status} on POST /predict: ${body || res.statusText}`);
+  }
+  return res.json();
+}
+
 // Pure, synchronous — computes the AI insight summary from events already in hand
-// (avoids a second network round-trip when the caller already fetched events).
 export function computeAiInsights(events) {
   const topRiskEvents = [...events].sort((a, b) => b.riskScore - a.riskScore).slice(0, 3);
 
   const techniqueCounts = {};
   events.forEach((e) => {
-    const key = e.mitre.id;
-    techniqueCounts[key] = techniqueCounts[key] || { ...e.mitre, count: 0 };
+    const key = e.mitre?.id || "N/A";
+    techniqueCounts[key] = techniqueCounts[key] || { ...(e.mitre || { id: "N/A", technique: "Unknown", tactic: "Unknown" }), count: 0 };
     techniqueCounts[key].count += 1;
   });
   const topTechniques = Object.values(techniqueCounts).sort((a, b) => b.count - a.count).slice(0, 3);
@@ -85,8 +150,6 @@ export async function getAiInsights() {
   return computeAiInsights(events);
 }
 
-// Filter/severity/event-type option lists still come from the frontend's own
-// constants — the backend doesn't need a dedicated endpoint just for these.
 export const EVENT_TYPE_OPTIONS = [
   "Brute Force", "Failed Login", "Login Success", "File Access", "Port Scan",
   "Malware Detection", "USB Device Connected", "Privilege Escalation",
@@ -94,3 +157,4 @@ export const EVENT_TYPE_OPTIONS = [
 ];
 export const SEVERITY_OPTIONS = ["Critical", "High", "Medium", "Low"];
 export const STATUS_OPTIONS = ["Open", "Investigating", "Resolved", "Closed"];
+export const VERDICT_OPTIONS = ["Normal", "Suspicious", "Critical"];
